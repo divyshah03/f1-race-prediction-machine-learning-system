@@ -1,0 +1,43 @@
+name: "Chinese Grand Prix"
+circuit: shanghai
+season: 2025
+
+historical:
+  year: 2024
+  round: 5
+  session: "R"
+
+weather:
+  latitude: 31.3389
+  longitude: 121.2200
+  forecast_time: "2025-03-23 07:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 200
+  learning_rate: 0.1
+  test_size: 0.2
+  random_state: 38
+
+drivers:
+  - {code: PIA, qualifying_time: 90.641}
+  - {code: RUS, qualifying_time: 90.723}
+  - {code: NOR, qualifying_time: 90.793}
+  - {code: VER, qualifying_time: 90.817}
+  - {code: HAM, qualifying_time: 90.927}
+  - {code: LEC, qualifying_time: 91.021}
+  - {code: HAD, qualifying_time: 91.079}
+  - {code: ANT, qualifying_time: 91.103}
+  - {code: TSU, qualifying_time: 91.638}
+  - {code: ALB, qualifying_time: 91.706}
+  - {code: OCO, qualifying_time: 91.625}
+  - {code: HUL, qualifying_time: 91.632}
+  - {code: ALO, qualifying_time: 91.688}
+  - {code: STR, qualifying_time: 91.773}
+  - {code: SAI, qualifying_time: 91.840}
+  - {code: GAS, qualifying_time: 91.992}
+  - {code: BEA, qualifying_time: 92.018}
+  - {code: DOO, qualifying_time: 92.092}
+  - {code: BOR, qualifying_time: 92.141}
+  - {code: LAW, qualifying_time: 92.174}
