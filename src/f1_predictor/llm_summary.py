@@ -60,5 +60,7 @@ def summarize_prediction(
         shap_lines=_format_shap_lines(winner_shap_values),
     )
 
-    response = client.messages.create(model=model, max_tokens=300, messages=[{"role": "user", "content": prompt}])
+    response = client.messages.create(
+        model=model, max_tokens=300, messages=[{"role": "user", "content": prompt}]
+    )
     return response.content[0].text

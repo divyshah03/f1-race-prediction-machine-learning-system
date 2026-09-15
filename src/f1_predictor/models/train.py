@@ -55,7 +55,9 @@ def build_model_pipeline(
     return Pipeline([("preprocessing", preprocessing), ("model", regressor)])
 
 
-def fit(table: pd.DataFrame, model_config: ModelConfig, include_circuit: bool = False) -> tuple[Pipeline, list[str]]:
+def fit(
+    table: pd.DataFrame, model_config: ModelConfig, include_circuit: bool = False
+) -> tuple[Pipeline, list[str]]:
     """Fit a model pipeline on a feature table that includes the 'LapTime (s)' target.
 
     Returns the fitted pipeline and the exact input column order it expects.

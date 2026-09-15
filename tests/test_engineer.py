@@ -17,7 +17,9 @@ def test_build_feature_table_maps_target_from_historical_laps(sample_race_config
     assert (table["Temperature"] == 20.0).all()
 
 
-def test_wet_performance_adjusts_qualifying_time_only_when_raining(sample_race_config, sample_historical_laps):
+def test_wet_performance_adjusts_qualifying_time_only_when_raining(
+    sample_race_config, sample_historical_laps
+):
     sample_race_config.wet_performance_factor = {"VER": 0.9, "NOR": 0.8, "LEC": 0.95}
     sector_times = average_sector_times(sample_historical_laps)
 

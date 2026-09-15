@@ -35,7 +35,9 @@ def shap_summary_plot(pipeline: Pipeline, table: pd.DataFrame, columns: list[str
     plt.close()
 
 
-def explain_prediction(pipeline: Pipeline, table: pd.DataFrame, columns: list[str], driver: str) -> dict[str, float]:
+def explain_prediction(
+    pipeline: Pipeline, table: pd.DataFrame, columns: list[str], driver: str
+) -> dict[str, float]:
     """Per-driver SHAP feature contributions, used to feed the optional LLM summary."""
     model = pipeline.named_steps["model"]
     row = table[table["Driver"] == driver]
@@ -44,4 +46,4 @@ def explain_prediction(pipeline: Pipeline, table: pd.DataFrame, columns: list[st
     explainer = shap.Explainer(model, transformed)
     shap_values = explainer(transformed)
 
-    return dict(zip(feature_names, shap_values.values[0]))
+    return dict(zip(feature_names, shap_values.values[0], strict=True))

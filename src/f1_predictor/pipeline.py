@@ -15,7 +15,7 @@ from f1_predictor import evaluate
 from f1_predictor.config import RaceConfig, load_race_config
 from f1_predictor.data import loader
 from f1_predictor.features.engineer import build_feature_table
-from f1_predictor.models import baseline, predict, train
+from f1_predictor.models import predict, train
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -45,8 +45,12 @@ def run(race: str) -> dict:
 
     pipeline, columns = train.fit(train_table, config.model)
 
-    model_metrics = evaluate.regression_metrics(test_table["LapTime (s)"], pipeline.predict(test_table[columns]))
-    baseline_metrics = evaluate.regression_metrics(test_table["LapTime (s)"], test_table["QualifyingTime (s)"])
+    model_metrics = evaluate.regression_metrics(
+        test_table["LapTime (s)"], pipeline.predict(test_table[columns])
+    )
+    baseline_metrics = evaluate.regression_metrics(
+        test_table["LapTime (s)"], test_table["QualifyingTimeRaw (s)"]
+    )
     lift = evaluate.ranking_lift(model_metrics, baseline_metrics)
 
     results = predict.predict_race_times(pipeline, table, columns)
@@ -62,10 +66,12 @@ def run(race: str) -> dict:
         f"Baseline-> MAE: {baseline_metrics['mae']:.2f}s | RMSE: {baseline_metrics['rmse']:.2f}s | "
         f"Spearman: {baseline_metrics['spearman']:.2f}  (predicting quali order as-is)"
     )
-    print(f"Lift over baseline: {lift['spearman_lift']:+.2f} spearman, {lift['mae_improvement_pct']:+.1f}% MAE")
+    print(
+        f"Lift over baseline: {lift['spearman_lift']:+.2f} spearman, {lift['mae_improvement_pct']:+.1f}% MAE"
+    )
 
     print("\nPredicted podium:")
-    for position, (_, row) in zip(["P1", "P2", "P3"], podium.iterrows()):
+    for position, (_, row) in zip(["P1", "P2", "P3"], podium.iterrows(), strict=False):
         print(f"  {position}: {row['Driver']} ({row['PredictedRaceTime (s)']:.2f}s)")
 
     return {
@@ -81,7 +87,9 @@ def run(race: str) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the F1 race prediction pipeline for one race.")
-    parser.add_argument("--race", required=True, help="Race config slug, e.g. 'monaco_gp' (see configs/races/)")
+    parser.add_argument(
+        "--race", required=True, help="Race config slug, e.g. 'monaco_gp' (see configs/races/)"
+    )
     args = parser.parse_args()
     run(args.race)
 

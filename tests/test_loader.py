@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
+import requests
 
 from f1_predictor.config import HistoricalSessionConfig, WeatherConfig
 from f1_predictor.data import loader
@@ -60,7 +61,9 @@ def test_fetch_weather_forecast_parses_matching_slot():
 def test_fetch_weather_forecast_falls_back_on_request_error():
     weather = WeatherConfig(latitude=1.0, longitude=1.0, forecast_time="2025-01-01 12:00:00")
 
-    with patch("f1_predictor.data.loader.requests.get", side_effect=ConnectionError("boom")):
+    with patch(
+        "f1_predictor.data.loader.requests.get", side_effect=requests.exceptions.ConnectionError("boom")
+    ):
         rain, temp = loader.fetch_weather_forecast(weather, api_key="test-key")
 
     assert (rain, temp) == (0.0, 20.0)

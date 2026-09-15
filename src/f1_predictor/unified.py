@@ -69,7 +69,9 @@ def benchmark_models(
 ) -> pd.DataFrame:
     """Fit each candidate model type on the same walk-forward split and compare metrics."""
     rows = []
-    baseline_metrics = evaluate.regression_metrics(test_table["LapTime (s)"], test_table["QualifyingTime (s)"])
+    baseline_metrics = evaluate.regression_metrics(
+        test_table["LapTime (s)"], test_table["QualifyingTimeRaw (s)"]
+    )
     rows.append({"model": "baseline_quali_order", **baseline_metrics})
 
     for model_type in model_types:
@@ -93,7 +95,9 @@ def benchmark_models(
                     model=pipeline,
                 )
             except Exception:
-                logger.warning("MLflow logging failed for %s; continuing without it.", model_type, exc_info=True)
+                logger.warning(
+                    "MLflow logging failed for %s; continuing without it.", model_type, exc_info=True
+                )
 
     return pd.DataFrame(rows)
 

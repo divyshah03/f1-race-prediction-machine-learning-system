@@ -3,7 +3,9 @@ import yaml
 from f1_predictor import pipeline
 
 
-def test_pipeline_run_end_to_end_on_fixture(monkeypatch, sample_race_config, sample_historical_laps, tmp_path):
+def test_pipeline_run_end_to_end_on_fixture(
+    monkeypatch, sample_race_config, sample_historical_laps, tmp_path
+):
     config_path = tmp_path / "fixture_gp.yaml"
     config_path.write_text(
         yaml.dump(

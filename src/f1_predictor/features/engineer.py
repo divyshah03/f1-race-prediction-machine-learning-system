@@ -14,7 +14,7 @@ from sklearn.preprocessing import OneHotEncoder
 from f1_predictor.config import RaceConfig
 
 SECTOR_COLUMNS = ["Sector1Time (s)", "Sector2Time (s)", "Sector3Time (s)", "TotalSectorTime (s)"]
-IDENTIFIER_COLUMNS = {"Driver", "Team", "circuit", "LapTime (s)"}
+IDENTIFIER_COLUMNS = {"Driver", "Team", "circuit", "LapTime (s)", "QualifyingTimeRaw (s)"}
 
 
 def _team_performance_score(config: RaceConfig) -> dict[str, float]:
@@ -43,6 +43,9 @@ def build_feature_table(
             "QualifyingTime (s)": [d.qualifying_time for d in config.drivers],
         }
     )
+    # Keep the untransformed qualifying time around for baseline comparisons, since
+    # "QualifyingTime (s)" below may get weather-adjusted and/or squared for the model.
+    table["QualifyingTimeRaw (s)"] = table["QualifyingTime (s)"]
 
     if sector_times is not None and not sector_times.empty:
         table = table.merge(sector_times[["Driver", *SECTOR_COLUMNS]], on="Driver", how="left")
@@ -53,7 +56,9 @@ def build_feature_table(
     if config.wet_performance_factor:
         table["WetPerformanceFactor"] = table["Driver"].map(config.wet_performance_factor)
         if rain_probability >= config.weather.rain_threshold:
-            table["QualifyingTime (s)"] = table["QualifyingTime (s)"] * table["WetPerformanceFactor"].fillna(1.0)
+            table["QualifyingTime (s)"] = table["QualifyingTime (s)"] * table["WetPerformanceFactor"].fillna(
+                1.0
+            )
 
     if config.qualifying_time_transform == "square":
         table["QualifyingTime (s)"] = table["QualifyingTime (s)"] ** 2
@@ -96,7 +101,9 @@ def numeric_feature_columns(table: pd.DataFrame) -> list[str]:
     ]
 
 
-def build_preprocessing_pipeline(numeric_features: list[str], include_circuit: bool = False) -> ColumnTransformer:
+def build_preprocessing_pipeline(
+    numeric_features: list[str], include_circuit: bool = False
+) -> ColumnTransformer:
     """A ColumnTransformer that median-imputes numeric features and one-hot encodes circuit."""
     transformers = [("numeric", SimpleImputer(strategy="median"), numeric_features)]
     if include_circuit:

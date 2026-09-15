@@ -15,7 +15,9 @@ import mlflow.sklearn
 logger = logging.getLogger(__name__)
 
 
-def log_model_run(run_name: str, params: dict, metrics: dict, model=None, artifact_path: str = "model") -> None:
+def log_model_run(
+    run_name: str, params: dict, metrics: dict, model=None, artifact_path: str = "model"
+) -> None:
     """Log one training run's hyperparameters, metrics, and (optionally) the fitted model."""
     with mlflow.start_run(run_name=run_name):
         mlflow.log_params({k: v for k, v in params.items() if v is not None})

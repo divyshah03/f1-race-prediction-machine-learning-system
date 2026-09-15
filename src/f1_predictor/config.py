@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -31,16 +31,16 @@ class ModelConfig:
     type: str = "gradient_boosting"
     n_estimators: int = 100
     learning_rate: float = 0.1
-    max_depth: Optional[int] = None
+    max_depth: int | None = None
     test_size: float = 0.2
     random_state: int = 39
-    monotone_constraints: Optional[str] = None
+    monotone_constraints: str | None = None
 
 
 @dataclasses.dataclass
 class DriverEntry:
     code: str
-    qualifying_time: Optional[float]
+    qualifying_time: float | None
 
 
 @dataclasses.dataclass
@@ -59,7 +59,7 @@ class RaceConfig:
     season_points: dict[str, float] = dataclasses.field(default_factory=dict)
     average_2025_performance: dict[str, float] = dataclasses.field(default_factory=dict)
     average_position_change: dict[str, float] = dataclasses.field(default_factory=dict)
-    last_year_winner: Optional[str] = None
+    last_year_winner: str | None = None
     qualifying_time_transform: str = "none"  # "none" | "square"
 
     @property

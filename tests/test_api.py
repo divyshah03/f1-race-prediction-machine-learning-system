@@ -1,7 +1,7 @@
 import pandas as pd
 from fastapi.testclient import TestClient
 
-from api.main import app, _cached_run
+from api.main import _cached_run, app
 
 
 def test_health_endpoint():
