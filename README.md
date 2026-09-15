@@ -86,11 +86,27 @@ Train and benchmark a single model across every race (Phase 2):
 python -m f1_predictor.unified
 ```
 
+Every run of the above logs params, metrics, the fitted model (loadable back
+via `mlflow.sklearn.load_model`, for every candidate type including
+XGBoost/LightGBM/CatBoost), and a SHAP summary plot to MLflow. Inspect with:
+
+```bash
+mlflow ui --backend-store-uri sqlite:///mlflow.db
+```
+
 Serve predictions over HTTP:
 
 ```bash
 uvicorn api.main:app --reload
 # then: curl -X POST localhost:8000/predict -H 'content-type: application/json' -d '{"race": "monaco_gp"}'
+```
+
+Or run it in Docker (verified end-to-end: builds, serves `/health`, `/races`,
+and `/predict` with real, non-mocked FastF1 + weather data):
+
+```bash
+docker build -t f1-predictor .
+docker run -p 8000:8000 f1-predictor
 ```
 
 Run tests:
@@ -112,27 +128,43 @@ like `driver_team` / `team_points` / `clean_air_race_pace`). No code changes nee
 
 One `gradient_boosting` model trained across all 9 races (`circuit` as a one-hot
 categorical feature), evaluated with a **walk-forward split** — trained on the
-earlier rounds of the season, tested on the last 2 held-out rounds — not a random
-split, which would leak future races into training:
+earlier rounds of the season, tested on the last 2 held-out rounds (Monaco, Abu
+Dhabi) — not a random split, which would leak future races into training:
 
-| Model                  | MAE (s) | RMSE (s) | Spearman |
+| Model                  | MAE (s) | RMSE (s) | Spearman (per-race) |
 |-------------------------|--------:|---------:|---------:|
-| **gradient_boosting**   | **2.60**| **3.61** | 0.851    |
-| xgboost                 | 3.30    | 4.46     | 0.842    |
-| lightgbm                | 5.92    | 6.94     | 0.847    |
-| catboost                | 7.39    | 9.39     | -0.330   |
-| baseline (quali order)  | 8.01    | 8.06     | 0.862    |
+| **gradient_boosting**   | **2.60**| **3.61** | 0.33     |
+| xgboost                 | 3.30    | 4.46     | 0.16     |
+| lightgbm                | 5.92    | 6.94     | 0.26     |
+| catboost                | 7.39    | 9.39     | **0.54**|
+| baseline (quali order)  | 8.01    | 8.06     | 0.50     |
 
 Reproduce with `python -m f1_predictor.unified`.
 
-**Honest read of this table:** the best model cuts absolute lap-time error by
-**~68% vs. the naive baseline**, but its rank-correlation on this small held-out
-set is roughly *tied* with just sorting by qualifying time. That's a real, useful
-finding, not a bug: qualifying order is already a strong proxy for finishing order,
-so the ML gain here is mostly in predicting *how close* the race will be, not in
-reordering who beats whom. CatBoost's collapse is likely under-tuned defaults
-(same generic hyperparameters applied to every model type) rather than a
-fundamental issue with the algorithm — a natural next tuning target.
+Spearman here is **averaged within each held-out race, then across races** —
+not pooled across every test row. Rank correlation only means something within
+a single race's field of drivers (nobody's finishing position is compared
+against a driver from a different Grand Prix), so pooling Monaco and Abu Dhabi
+rows together before computing one correlation would conflate "ranks drivers
+correctly" with "happens to separate two circuits' overall pace" — an earlier
+version of this table did exactly that and reported CatBoost at **-0.33**,
+which looked like a modeling bug. It wasn't: CatBoost's model artifact,
+categorical handling, and loss/eval setup all check out, and per-race it's
+actually the *best*-ranking model of the four, ahead of the naive baseline.
+
+**Honest read of this table:** no single model wins on both axes.
+`gradient_boosting` has the lowest absolute error (**-67.6% MAE vs. baseline**)
+but the worst rank-correlation lift of the boosted models — it's actually
+*less* rank-correlated with the true order than just sorting by qualifying
+time on this small held-out set. `catboost` is the opposite: worst MAE, best
+ranking. That tension, not a clean sweep, is the real finding: qualifying
+order is already a strong proxy for finishing order, so a model can shave
+absolute-time error without necessarily reordering who beats whom, and vice
+versa. (Also fixed along the way: XGBoost defaults to
+`enable_categorical=True` in this xgboost version, which silently made SHAP's
+`TreeExplainer` refuse to run — disabled explicitly, since `circuit` is
+already one-hot encoded upstream and XGBoost never sees a native categorical
+column.)
 
 Beyond the point prediction, every race also gets Monte Carlo **podium/win
 probabilities** (`models/predict.py::podium_probabilities`) by perturbing the
@@ -142,17 +174,23 @@ LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
 ## What I'd do with more time
 
 - **Tune per-model-type**, not one generic hyperparameter set for all four
-  candidates — CatBoost in particular needs its own pass.
+  candidates — `gradient_boosting` currently has the best MAE but the worst
+  rank-correlation lift of the boosted models; a real tuning pass (not just a
+  metric fix) might close that gap.
 - **Pit stop strategy and tire degradation** — currently zero strategy signal;
   this is likely the single biggest accuracy ceiling.
 - **DNF modeling** — races end early for reasons pace data can't see.
 - **More seasons of history** — 9 races x ~13-20 drivers is a small dataset;
   the podium-probability confidence intervals are almost certainly too tight.
-- **Fix MLflow model-artifact logging** — works for params/metrics today, but
-  `mlflow.sklearn.log_model` refuses to serialize XGBoost/LightGBM/CatBoost
-  under MLflow 3.x's default skops security policy (see `todo.md` Phase 3).
-- **Actually deploy it** — Dockerfile + FastAPI are ready; getting a live URL
-  on Render/Railway/Fly.io is a manual step (see `todo.md` Phase 5).
+- **Exercise the LLM summary against a live API call** — the SHAP-to-natural-
+  language path (`llm_summary.py`) is wired into the API and imports/runs
+  correctly, but generating and saving a real example output needs an
+  `ANTHROPIC_API_KEY`, which wasn't provided this session (offered and
+  deliberately skipped).
+- **Actually deploy it** — Dockerfile + FastAPI are verified working end-to-end
+  locally (built the image, ran the container, hit `/health`, `/races`, and
+  `/predict` against live, non-mocked FastF1 data); getting a public URL on
+  Render/Railway/Fly.io is a deliberate manual step, not attempted here.
 
 ## Resume bullets
 
@@ -170,4 +208,5 @@ LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
 
 See `todo.md` for the full in-progress modernization roadmap and an honest,
 checkbox-level account of what's done vs. still open (mainly: live deployment,
-MLflow model-artifact logging, and per-model hyperparameter tuning).
+a real LLM-summary example from a live API key, and per-model hyperparameter
+tuning).

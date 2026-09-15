@@ -80,11 +80,14 @@ output the old `monaco.py` gave you, from one shared codebase.
 - [x] Write `evaluate.py` that reports MAE, RMSE, and rank-correlation (Spearman)
       between predicted and actual finishing order
 
-**Real result** (walk-forward split, last 2 rounds held out, all 9 races):
-gradient_boosting MAE 2.60s vs. baseline 8.01s (**-67.6% MAE**); rank-correlation
-(Spearman) was roughly tied with the naive baseline (0.85 vs 0.86) on this small
-held-out set — an honest finding, not hidden: quali order alone already ranks
-drivers well, the ML gain is mostly in absolute time accuracy. See README Results.
+**Real result** (walk-forward split, last 2 rounds held out — Monaco, Abu
+Dhabi — all 9 races): gradient_boosting MAE 2.60s vs. baseline 8.01s
+(**-67.6% MAE**). Spearman is averaged **per held-out race**, not pooled
+across races (pooling conflated "ranks drivers correctly" with "separates two
+circuits' pace" and briefly made catboost look badly broken at -0.33 — see
+README Results for the full explanation); per-race, no model wins on both
+axes: gradient_boosting 0.33 (worse than baseline's 0.50), catboost 0.54
+(best of all four, on the worst MAE). An honest, non-cherry-picked finding.
 
 **Checkpoint:** one trained model, benchmarked against 2-3 algorithms and a
 naive baseline, with SHAP plots and a written note on what actually mattered.
@@ -97,15 +100,16 @@ naive baseline, with SHAP plots and a written note on what actually mattered.
 - [x] Wrap training runs with `mlflow.start_run()` (`src/f1_predictor/tracking.py`), log:
   - [x] hyperparameters
   - [x] MAE / RMSE / rank-correlation
-  - [~] model artifact — attempted via `mlflow.sklearn.log_model`, but MLflow 3.x's
-        default skops serializer refuses to log XGBoost/LightGBM/CatBoost models as
-        "untrusted types"; caught and logged as a warning rather than crashing the
-        run, so params/metrics still land. Would need `skops_trusted_types=` or a
-        plain pickle/joblib artifact to fix properly.
-  - [ ] feature importance plot as an artifact — not wired up
+  - [x] model artifact — fixed via `skops_trusted_types=` (see
+        `tracking.SKOPS_TRUSTED_TYPES`); verified by loading every candidate
+        model type (gradient_boosting/xgboost/lightgbm/catboost) back from its
+        logged MLflow artifact and confirming `.predict()` works.
+  - [x] feature importance plot as an artifact — `unified.benchmark_models`
+        now builds a SHAP summary figure per run and logs it via
+        `mlflow.log_figure` as `shap_summary.png`
 - [ ] Run `mlflow ui` locally and screenshot it for the README — needs a human at a
-      browser; not something this session could do. Run `mlflow ui` yourself (it
-      reads from wherever `MLFLOW_TRACKING_URI` points, see note below) to see it.
+      browser; not something this session could do. Run `mlflow ui --backend-store-uri
+      sqlite:///mlflow.db` yourself to see it (README Usage section has the command).
 - [ ] (Optional stretch) log input data version/hash — not done
 
 > Note: this MLflow install defaults its tracking URI to a local sqlite file
@@ -126,13 +130,15 @@ run you've done, not just the final one.
   - [x] feature engineering functions (given known input, expect known output)
   - [x] data loader (mock the FastF1/weather API calls)
   - [x] pipeline runs end-to-end on a small fixture race
-  - [x] (also: evaluate.py metrics, baseline model, API endpoints) — 17 tests, all green
+  - [x] (also: evaluate.py metrics, baseline model, API endpoints) — 19 tests, all green
 - [x] Add `ruff` + `black` for linting/formatting (both configured in `pyproject.toml`,
       both currently clean on `src`/`api`/`tests`)
-- [x] Add `.github/workflows/ci.yml`: run tests + lint on every push/PR
-- [ ] Add a CI badge to the README — not done yet; needs the workflow to actually
-      run on GitHub first (requires pushing this branch, which wasn't done this
-      session — see Phase 5 note on why nothing was pushed)
+- [x] Add `.github/workflows/ci.yml`: run tests + lint on every push/PR — pushed to
+      `origin/main` and green (fixed a real CI-only failure: `httpx` was only ever
+      installed locally as a transitive dep of the optional `llm` extra, so CI's
+      `pip install ".[dev]"` crashed FastAPI's `TestClient` import; added `httpx` to
+      `dev` deps explicitly)
+- [x] Add a CI badge to the README
 
 **Checkpoint:** green CI badge on your repo — signals real software practice,
 not just notebooks.
@@ -145,21 +151,21 @@ not just notebooks.
 - [x] Build a **FastAPI** app (`api/main.py`): `POST /predict` takes `{"race": "..."}`
       and returns predicted order, podium probabilities, MAE/Spearman lift over
       baseline, and an optional LLM summary; `GET /races` lists valid race slugs
-- [ ] Test the container locally (`docker build . && docker run ...`) — not run this
-      session (no Docker daemon check performed; the Dockerfile is written and
-      installs cleanly via `pip install ".[api]"` but the actual container build was
-      not verified end-to-end here)
-- [ ] Deploy to a free-tier host (Render, Railway, Fly.io) — **cannot be done
-      autonomously**: needs a human to create/authorize an account on that host.
-      The Dockerfile + API are ready; deploying is a manual step for the user.
+- [x] Test the container locally (`docker build . && docker run ...`) — built the
+      image, ran it, and hit `/health`, `/races`, and `/predict` against real
+      (non-mocked) FastF1 + weather data. Surfaced and fixed a real container-only
+      bug: `config.CONFIGS_ROOT` was computed from `Path(__file__).resolve().parents[2]`,
+      which only lands on the repo root under an *editable* install; the Docker
+      image's regular `pip install ".[api]"` copies `config.py` into site-packages
+      instead, so `/races` came back empty and every `/predict` 404'd. Fixed with an
+      `F1_CONFIGS_DIR` env var override (same pattern as `loader.py`'s `F1_CACHE_DIR`),
+      set in the Dockerfile.
+- [ ] Deploy to a free-tier host (Render, Railway, Fly.io) — **intentionally not
+      done**: the user has explicitly said they do not want this project deployed
+      anywhere. The Dockerfile + API are verified working locally if that changes.
 - [ ] (Optional) Streamlit front end — not built (FastAPI response already carries
       everything a UI would need)
-- [ ] Get a live public URL — blocked on the manual deployment step above
-
-> Nothing in this repo was pushed to `origin` (github.com/divyshah03/...) this
-> session. Committing locally was requested explicitly; pushing to a shared
-> remote/deploying to a host are separate, more visible actions that weren't
-> asked for, so they were left for the user to trigger deliberately.
+- [ ] Get a live public URL — not pursued, per the user's no-deploy preference above.
 
 **Checkpoint:** a link you can click that shows a working prediction, not just
 a GitHub repo someone has to clone to try.
@@ -177,9 +183,11 @@ a GitHub repo someone has to clone to try.
 
 > Requires `ANTHROPIC_API_KEY` in `.env`; gracefully returns `None` (skips the
 > feature) if unset rather than erroring, since this is meant as an optional
-> add-on, not a dependency of the core pipeline. Not actually exercised against
-> a live API key this session (none was available) — the code path was verified
-> to import and wire correctly, but the real Claude call itself is untested.
+> add-on, not a dependency of the core pipeline. Still not actually exercised
+> against a live API key — offered to the user this session (paste a key, add
+> it to `.env` themselves, or skip), and they chose to skip it. The code path
+> is verified to import and wire correctly; the real Claude call itself
+> remains untested.
 
 ---
 
