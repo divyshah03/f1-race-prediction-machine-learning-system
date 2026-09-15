@@ -16,6 +16,7 @@ import pandas as pd
 from f1_predictor import evaluate, tracking
 from f1_predictor.config import ModelConfig, available_races, load_race_config
 from f1_predictor.data import loader
+from f1_predictor.explain import build_shap_summary_figure
 from f1_predictor.features.engineer import build_feature_table
 from f1_predictor.models import train
 
@@ -88,11 +89,22 @@ def benchmark_models(
 
         if track_with_mlflow:
             try:
+                shap_figure = build_shap_summary_figure(pipeline, train_table, columns)
+            except Exception:
+                logger.warning(
+                    "SHAP summary plot failed for %s; logging the run without it.",
+                    model_type,
+                    exc_info=True,
+                )
+                shap_figure = None
+
+            try:
                 tracking.log_model_run(
                     run_name=model_type,
                     params=dataclasses_to_dict(model_config),
                     metrics=metrics,
                     model=pipeline,
+                    shap_figure=shap_figure,
                 )
             except Exception:
                 logger.warning(

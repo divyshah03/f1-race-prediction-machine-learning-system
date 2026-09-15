@@ -1,7 +1,8 @@
 """MLflow experiment tracking helpers.
 
 Wraps a single model run with `mlflow.start_run()` and logs hyperparameters,
-regression metrics, and the fitted model artifact.
+regression metrics, the fitted model artifact (via `skops_trusted_types`, see
+below), and an optional SHAP summary plot.
 
 Defaults MLFLOW_TRACKING_URI to a *relative* local sqlite path
 ("sqlite:///mlflow.db") if not already set. MLflow 3.x's default behavior is to
@@ -19,6 +20,7 @@ from __future__ import annotations
 import logging
 import os
 
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 
@@ -43,9 +45,14 @@ SKOPS_TRUSTED_TYPES = [
 
 
 def log_model_run(
-    run_name: str, params: dict, metrics: dict, model=None, artifact_path: str = "model"
+    run_name: str,
+    params: dict,
+    metrics: dict,
+    model=None,
+    artifact_path: str = "model",
+    shap_figure: plt.Figure | None = None,
 ) -> None:
-    """Log one training run's hyperparameters, metrics, and (optionally) the fitted model."""
+    """Log one training run's hyperparameters, metrics, model artifact, and SHAP plot."""
     with mlflow.start_run(run_name=run_name):
         mlflow.log_params({k: v for k, v in params.items() if v is not None})
         mlflow.log_metrics({k: float(v) for k, v in metrics.items() if isinstance(v, (int, float))})
@@ -54,3 +61,10 @@ def log_model_run(
                 mlflow.sklearn.log_model(model, artifact_path, skops_trusted_types=SKOPS_TRUSTED_TYPES)
             except Exception:
                 logger.warning("Could not log model artifact for run %r.", run_name, exc_info=True)
+        if shap_figure is not None:
+            try:
+                mlflow.log_figure(shap_figure, "shap_summary.png")
+            except Exception:
+                logger.warning("Could not log SHAP summary plot for run %r.", run_name, exc_info=True)
+            finally:
+                plt.close(shap_figure)

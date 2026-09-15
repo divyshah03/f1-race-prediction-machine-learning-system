@@ -32,7 +32,12 @@ def _make_regressor(model_config: ModelConfig):
 
         if model_config.monotone_constraints:
             kwargs["monotone_constraints"] = model_config.monotone_constraints
-        return XGBRegressor(**kwargs)
+        # circuit is already one-hot encoded upstream by our ColumnTransformer, so
+        # XGBoost never receives a native categorical column; disabling XGBoost's
+        # own categorical handling (defaults to True as of xgboost>=2.x) keeps the
+        # fitted booster compatible with SHAP's TreeExplainer, which refuses to run
+        # against any model with that flag set.
+        return XGBRegressor(enable_categorical=False, **kwargs)
 
     if model_config.type == "lightgbm":
         from lightgbm import LGBMRegressor
