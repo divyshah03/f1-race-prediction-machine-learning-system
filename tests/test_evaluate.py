@@ -25,6 +25,15 @@ def test_regression_metrics_inverted_order_has_negative_correlation():
     assert metrics["spearman"] == -1.0
 
 
+def test_regression_metrics_drops_nan_pairs_instead_of_crashing():
+    y_true = pd.Series([90.0, 91.0, 92.0])
+    y_pred = np.array([90.0, np.nan, 92.0])
+
+    metrics = evaluate.regression_metrics(y_true, y_pred)
+
+    assert metrics["mae"] == 0.0
+
+
 def test_ranking_lift_reports_positive_lift_when_model_beats_baseline():
     model_metrics = {"mae": 1.0, "rmse": 1.5, "spearman": 0.9}
     baseline_metrics = {"mae": 2.0, "rmse": 2.5, "spearman": 0.5}

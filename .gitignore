@@ -20,6 +20,10 @@ f1_cache/
 # MLflow
 mlruns/
 mlartifacts/
+mlflow.db
+
+# CatBoost training logs
+catboost_info/
 
 # Testing / coverage
 .pytest_cache/

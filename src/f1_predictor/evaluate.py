@@ -10,9 +10,21 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
 def regression_metrics(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
-    mae = mean_absolute_error(y_true, y_pred)
-    rmse = mean_squared_error(y_true, y_pred) ** 0.5
-    correlation, _ = spearmanr(y_true, y_pred)
+    """MAE / RMSE / Spearman between true and predicted values.
+
+    Drops any pair where either side is NaN first -- e.g. a driver with no
+    recorded qualifying time (like Monaco's wet-weather no-time) still has
+    historical lap data, so it can land in a baseline comparison with a NaN
+    "prediction" that would otherwise crash sklearn's metrics.
+    """
+    y_true_arr = np.asarray(y_true, dtype=float)
+    y_pred_arr = np.asarray(y_pred, dtype=float)
+    mask = np.isfinite(y_true_arr) & np.isfinite(y_pred_arr)
+    y_true_arr, y_pred_arr = y_true_arr[mask], y_pred_arr[mask]
+
+    mae = mean_absolute_error(y_true_arr, y_pred_arr)
+    rmse = mean_squared_error(y_true_arr, y_pred_arr) ** 0.5
+    correlation, _ = spearmanr(y_true_arr, y_pred_arr)
     return {"mae": float(mae), "rmse": float(rmse), "spearman": float(correlation)}
 
 
