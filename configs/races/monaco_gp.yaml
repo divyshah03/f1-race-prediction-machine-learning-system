@@ -1,0 +1,92 @@
+name: "Monaco Grand Prix"
+circuit: monaco
+season: 2025
+
+historical:
+  year: 2024
+  round: 8
+  session: "R"
+
+weather:
+  latitude: 43.7384
+  longitude: 7.4246
+  forecast_time: "2025-05-25 13:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 100
+  learning_rate: 0.7
+  max_depth: 3
+  test_size: 0.3
+  random_state: 37
+
+drivers:
+  - {code: VER, qualifying_time: 70.669}
+  - {code: NOR, qualifying_time: 69.954}
+  - {code: PIA, qualifying_time: 70.129}
+  - {code: RUS, qualifying_time: null}
+  - {code: SAI, qualifying_time: 71.362}
+  - {code: ALB, qualifying_time: 71.213}
+  - {code: LEC, qualifying_time: 70.063}
+  - {code: OCO, qualifying_time: 70.942}
+  - {code: HAM, qualifying_time: 70.382}
+  - {code: STR, qualifying_time: 72.563}
+  - {code: GAS, qualifying_time: 71.994}
+  - {code: ALO, qualifying_time: 70.924}
+  - {code: HUL, qualifying_time: 71.596}
+
+driver_team:
+  VER: Red Bull
+  NOR: McLaren
+  PIA: McLaren
+  LEC: Ferrari
+  RUS: Mercedes
+  HAM: Mercedes
+  GAS: Alpine
+  ALO: Aston Martin
+  TSU: Racing Bulls
+  SAI: Ferrari
+  HUL: Kick Sauber
+  OCO: Alpine
+  STR: Aston Martin
+
+team_points:
+  McLaren: 279
+  Mercedes: 147
+  Red Bull: 131
+  Williams: 51
+  Ferrari: 114
+  Haas: 20
+  Aston Martin: 14
+  Kick Sauber: 6
+  Racing Bulls: 10
+  Alpine: 7
+
+clean_air_race_pace:
+  VER: 93.191067
+  HAM: 94.020622
+  LEC: 93.418667
+  NOR: 93.428600
+  ALO: 94.784333
+  PIA: 93.232111
+  RUS: 93.833378
+  SAI: 94.497444
+  STR: 95.318250
+  HUL: 95.345455
+  OCO: 95.682128
+
+average_position_change:
+  VER: -1.0
+  NOR: 1.0
+  PIA: 0.2
+  RUS: 0.5
+  SAI: -0.3
+  ALB: 0.8
+  LEC: -1.5
+  OCO: -0.2
+  HAM: 0.3
+  STR: 1.1
+  GAS: -0.4
+  ALO: -0.6
+  HUL: 0.0
