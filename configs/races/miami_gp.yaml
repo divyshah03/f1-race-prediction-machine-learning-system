@@ -1,0 +1,81 @@
+name: "Miami Grand Prix"
+circuit: miami
+season: 2025
+
+historical:
+  year: 2024
+  round: 6
+  session: "R"
+
+weather:
+  latitude: 25.7617
+  longitude: -80.1918
+  forecast_time: "2025-05-04 13:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 300
+  learning_rate: 0.05
+  max_depth: 5
+  test_size: 0.2
+  random_state: 38
+
+qualifying_time_transform: square
+last_year_winner: VER
+
+drivers:
+  - {code: VER, qualifying_time: 86.204}
+  - {code: NOR, qualifying_time: 86.269}
+  - {code: PIA, qualifying_time: 86.375}
+  - {code: RUS, qualifying_time: 86.385}
+  - {code: SAI, qualifying_time: 86.569}
+  - {code: ALB, qualifying_time: 86.682}
+  - {code: LEC, qualifying_time: 86.754}
+  - {code: OCO, qualifying_time: 86.824}
+  - {code: TSU, qualifying_time: 86.943}
+  - {code: HAM, qualifying_time: 87.006}
+  - {code: STR, qualifying_time: 87.830}
+  - {code: GAS, qualifying_time: 87.710}
+  - {code: ALO, qualifying_time: 87.604}
+  - {code: HUL, qualifying_time: 87.473}
+
+driver_team:
+  VER: Red Bull
+  NOR: McLaren
+  PIA: McLaren
+  LEC: Ferrari
+  RUS: Mercedes
+  HAM: Mercedes
+  GAS: Alpine
+  ALO: Aston Martin
+  TSU: Racing Bulls
+  SAI: Ferrari
+  HUL: Kick Sauber
+  OCO: Alpine
+  STR: Aston Martin
+
+team_points:
+  McLaren: 203
+  Mercedes: 118
+  Red Bull: 92
+  Williams: 25
+  Ferrari: 84
+  Haas: 20
+  Aston Martin: 14
+  Kick Sauber: 6
+  Racing Bulls: 8
+  Alpine: 7
+
+clean_air_race_pace:
+  VER: 93.191067
+  HAM: 94.020622
+  LEC: 93.418667
+  NOR: 93.428600
+  ALO: 94.784333
+  PIA: 93.232111
+  RUS: 93.833378
+  SAI: 94.497444
+  STR: 95.318250
+  HUL: 95.345455
+  OCO: 95.682128
