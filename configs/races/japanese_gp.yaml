@@ -1,0 +1,49 @@
+name: "Japanese Grand Prix"
+circuit: suzuka
+season: 2025
+
+historical:
+  year: 2024
+  round: 4
+  session: "R"
+
+weather:
+  latitude: 34.8823
+  longitude: 136.5845
+  forecast_time: "2025-04-05 14:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 200
+  learning_rate: 0.1
+  test_size: 0.2
+  random_state: 38
+
+drivers:
+  - {code: VER, qualifying_time: 86.983}
+  - {code: NOR, qualifying_time: 86.995}
+  - {code: PIA, qualifying_time: 87.027}
+  - {code: LEC, qualifying_time: 87.299}
+  - {code: RUS, qualifying_time: 87.318}
+  - {code: HAM, qualifying_time: 87.610}
+  - {code: GAS, qualifying_time: 87.822}
+  - {code: ALO, qualifying_time: 87.897}
+  - {code: TSU, qualifying_time: 88.000}
+  - {code: SAI, qualifying_time: 87.836}
+  - {code: HUL, qualifying_time: 88.570}
+  - {code: OCO, qualifying_time: 88.696}
+  - {code: STR, qualifying_time: 89.271}
+
+wet_performance_factor:
+  VER: 0.975196
+  HAM: 0.976464
+  LEC: 0.975862
+  NOR: 0.978179
+  ALO: 0.972655
+  RUS: 0.968678
+  SAI: 0.978754
+  TSU: 0.996338
+  OCO: 0.981810
+  GAS: 0.978832
+  STR: 0.979857
