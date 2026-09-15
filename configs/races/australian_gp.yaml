@@ -1,0 +1,35 @@
+name: "Australian Grand Prix"
+circuit: albert_park
+season: 2025
+
+historical:
+  year: 2024
+  round: 3
+  session: "R"
+
+weather:
+  latitude: -37.8497
+  longitude: 144.9680
+  forecast_time: "2025-03-16 05:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 100
+  learning_rate: 0.1
+  test_size: 0.2
+  random_state: 39
+
+drivers:
+  - {code: NOR, qualifying_time: 75.096}
+  - {code: PIA, qualifying_time: 75.180}
+  - {code: VER, qualifying_time: 75.481}
+  - {code: RUS, qualifying_time: 75.546}
+  - {code: TSU, qualifying_time: 75.670}
+  - {code: ALB, qualifying_time: 75.737}
+  - {code: LEC, qualifying_time: 75.755}
+  - {code: HAM, qualifying_time: 75.973}
+  - {code: GAS, qualifying_time: 75.980}
+  - {code: SAI, qualifying_time: 76.062}
+  - {code: ALO, qualifying_time: 76.400}
+  - {code: STR, qualifying_time: 76.500}
