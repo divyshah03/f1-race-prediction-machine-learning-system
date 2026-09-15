@@ -1,5 +1,7 @@
 # F1 Predictor
 
+[![CI](https://github.com/divyshah03/f1-race-prediction-machine-learning-system/actions/workflows/ci.yml/badge.svg)](https://github.com/divyshah03/f1-race-prediction-machine-learning-system/actions/workflows/ci.yml)
+
 A machine learning pipeline that predicts Formula 1 race outcomes from qualifying
 times, historical race telemetry (via [FastF1](https://github.com/theOehrly/Fast-F1)),
 and race-day weather forecasts.
