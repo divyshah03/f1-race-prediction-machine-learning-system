@@ -1,0 +1,81 @@
+name: "Abu Dhabi Grand Prix"
+circuit: yas_marina
+season: 2025
+
+historical:
+  year: 2024
+  round: 24
+  session: "R"
+
+weather:
+  latitude: 24.4672
+  longitude: 54.6031
+  forecast_time: "2025-12-07 13:00:00"
+  rain_threshold: 0.75
+
+model:
+  # NOTE: the original script used XGBoost with monotone_constraints tied to a
+  # fixed, hand-ordered feature list. Constraints are positional, and the
+  # unified feature table no longer guarantees that exact column order, so the
+  # constraint was dropped rather than silently applied to the wrong column.
+  type: xgboost
+  n_estimators: 300
+  learning_rate: 0.9
+  max_depth: 3
+  test_size: 0.1
+  random_state: 39
+
+drivers:
+  - {code: RUS, qualifying_time: 82.645}
+  - {code: VER, qualifying_time: 82.207}
+  - {code: PIA, qualifying_time: 82.437}
+  - {code: NOR, qualifying_time: 82.408}
+  - {code: HAM, qualifying_time: 83.394}
+  - {code: LEC, qualifying_time: 82.730}
+  - {code: ALO, qualifying_time: 82.902}
+  - {code: HUL, qualifying_time: 83.450}
+  - {code: ALB, qualifying_time: 83.416}
+  - {code: SAI, qualifying_time: 83.042}
+  - {code: STR, qualifying_time: 83.097}
+  - {code: OCO, qualifying_time: 82.913}
+  - {code: GAS, qualifying_time: 83.468}
+
+driver_team:
+  VER: Red Bull
+  NOR: McLaren
+  PIA: McLaren
+  LEC: Ferrari
+  RUS: Mercedes
+  HAM: Ferrari
+  GAS: Alpine
+  ALO: Aston Martin
+  TSU: Racing Bulls
+  SAI: Williams
+  HUL: Kick Sauber
+  OCO: Alpine
+  STR: Aston Martin
+
+team_points:
+  McLaren: 800
+  Mercedes: 459
+  Red Bull: 426
+  Williams: 137
+  Ferrari: 382
+  Haas: 73
+  Aston Martin: 80
+  Kick Sauber: 68
+  Racing Bulls: 92
+  Alpine: 22
+
+clean_air_race_pace:
+  VER: 93.191067
+  HAM: 94.020622
+  LEC: 93.418667
+  NOR: 93.428600
+  ALO: 94.784333
+  PIA: 93.232111
+  RUS: 93.833378
+  SAI: 94.497444
+  STR: 95.318250
+  HUL: 95.345455
+  OCO: 95.682128
