@@ -68,10 +68,16 @@ def benchmark_models(
     model_types: list[str] = CANDIDATE_MODEL_TYPES,
     track_with_mlflow: bool = True,
 ) -> pd.DataFrame:
-    """Fit each candidate model type on the same walk-forward split and compare metrics."""
+    """Fit each candidate model type on the same walk-forward split and compare metrics.
+
+    Spearman is averaged per-race (see `evaluate.grouped_regression_metrics`) rather
+    than pooled across every held-out race, since rank-correlation is only meaningful
+    within a single race's field of drivers.
+    """
     rows = []
-    baseline_metrics = evaluate.regression_metrics(
-        test_table["LapTime (s)"], test_table["QualifyingTimeRaw (s)"]
+    baseline_table = test_table.assign(_baseline_pred=test_table["QualifyingTimeRaw (s)"])
+    baseline_metrics = evaluate.grouped_regression_metrics(
+        baseline_table, "race", "LapTime (s)", "_baseline_pred"
     )
     rows.append({"model": "baseline_quali_order", **baseline_metrics})
 
@@ -84,7 +90,8 @@ def benchmark_models(
             continue
 
         predictions = pipeline.predict(test_table[columns])
-        metrics = evaluate.regression_metrics(test_table["LapTime (s)"], predictions)
+        predicted_table = test_table.assign(_model_pred=predictions)
+        metrics = evaluate.grouped_regression_metrics(predicted_table, "race", "LapTime (s)", "_model_pred")
         rows.append({"model": model_type, **metrics})
 
         if track_with_mlflow:
