@@ -1,0 +1,95 @@
+name: "Saudi Arabian Grand Prix"
+circuit: jeddah
+season: 2025
+
+historical:
+  year: 2024
+  round: 2
+  session: "R"
+
+weather:
+  latitude: 21.4225
+  longitude: 39.1818
+  forecast_time: "2025-04-20 18:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 300
+  learning_rate: 0.05
+  max_depth: 5
+  test_size: 0.2
+  random_state: 39
+
+qualifying_time_transform: square
+last_year_winner: VER
+
+drivers:
+  - {code: VER, qualifying_time: 87.294}
+  - {code: PIA, qualifying_time: 87.304}
+  - {code: LEC, qualifying_time: 87.670}
+  - {code: RUS, qualifying_time: 87.407}
+  - {code: HAM, qualifying_time: 88.201}
+  - {code: GAS, qualifying_time: 88.367}
+  - {code: ALO, qualifying_time: 88.303}
+  - {code: TSU, qualifying_time: 88.204}
+  - {code: SAI, qualifying_time: 88.164}
+  - {code: HUL, qualifying_time: 88.782}
+  - {code: OCO, qualifying_time: 89.092}
+  - {code: STR, qualifying_time: 88.645}
+  - {code: NOR, qualifying_time: 87.489}
+
+driver_team:
+  VER: Red Bull
+  NOR: McLaren
+  PIA: McLaren
+  LEC: Ferrari
+  RUS: Mercedes
+  HAM: Mercedes
+  GAS: Alpine
+  ALO: Aston Martin
+  TSU: Racing Bulls
+  SAI: Ferrari
+  HUL: Kick Sauber
+  OCO: Alpine
+  STR: Aston Martin
+
+team_points:
+  McLaren: 78
+  Mercedes: 53
+  Red Bull: 36
+  Williams: 17
+  Ferrari: 17
+  Haas: 14
+  Aston Martin: 10
+  Kick Sauber: 6
+  Racing Bulls: 3
+  Alpine: 0
+
+wet_performance_factor:
+  VER: 0.975196
+  HAM: 0.976464
+  LEC: 0.975862
+  NOR: 0.978179
+  ALO: 0.972655
+  RUS: 0.968678
+  SAI: 0.978754
+  TSU: 0.996338
+  OCO: 0.981810
+  GAS: 0.978832
+  STR: 0.979857
+
+average_2025_performance:
+  VER: 88.0
+  PIA: 89.1
+  LEC: 89.2
+  RUS: 89.3
+  HAM: 89.4
+  GAS: 89.5
+  ALO: 89.6
+  TSU: 89.7
+  SAI: 89.8
+  HUL: 89.9
+  OCO: 90.0
+  STR: 90.1
+  NOR: 90.2
