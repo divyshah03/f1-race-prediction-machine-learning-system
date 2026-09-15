@@ -25,7 +25,7 @@ small YAML config per race.
 FastF1 (historical laps/sectors)  ─┐
 OpenWeatherMap (race-day forecast) ─┼──►  feature table  ──►  model pipeline  ──►  predicted order
 configs/races/<slug>.yaml (quali,  │      (engineer.py)     (ColumnTransformer      + podium probability
-  teams, reference data)          ─┘                          + regressor)          + optional LLM summary
+  teams, reference data)          ─┘                          + regressor)
 ```
 
 ## Project Structure
@@ -46,8 +46,7 @@ f1-predictor/
 │   ├── pipeline.py          # single-race CLI: load -> feature -> train -> predict -> evaluate
 │   ├── unified.py           # cross-race model, walk-forward split, model benchmark
 │   ├── explain.py           # SHAP feature importance / per-prediction explanations
-│   ├── tracking.py          # MLflow experiment logging
-│   └── llm_summary.py       # optional: SHAP -> natural-language race summary (Claude)
+│   └── tracking.py          # MLflow experiment logging
 ├── configs/races/*.yaml     # one file per Grand Prix: quali times, weather, teams, model hyperparams
 ├── api/main.py               # FastAPI service (`/predict`, `/races`)
 ├── tests/                    # pytest unit + pipeline tests, FastF1/weather calls mocked
@@ -63,8 +62,8 @@ f1-predictor/
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[api,llm,dev]"
-cp .env.example .env   # fill in OPENWEATHER_API_KEY / ANTHROPIC_API_KEY if you have them
+pip install -e ".[api,dev]"
+cp .env.example .env   # fill in OPENWEATHER_API_KEY if you have one
 ```
 
 ## Usage
@@ -182,11 +181,6 @@ LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
 - **DNF modeling** — races end early for reasons pace data can't see.
 - **More seasons of history** — 9 races x ~13-20 drivers is a small dataset;
   the podium-probability confidence intervals are almost certainly too tight.
-- **Exercise the LLM summary against a live API call** — the SHAP-to-natural-
-  language path (`llm_summary.py`) is wired into the API and imports/runs
-  correctly, but generating and saving a real example output needs an
-  `ANTHROPIC_API_KEY`, which wasn't provided this session (offered and
-  deliberately skipped).
 - **Actually deploy it** — Dockerfile + FastAPI are verified working end-to-end
   locally (built the image, ran the container, hit `/health`, `/races`, and
   `/predict` against live, non-mocked FastF1 data); getting a public URL on
@@ -201,12 +195,9 @@ LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
   (walk-forward) split against a naive baseline, cutting MAE ~68% and adding
   SHAP-based explainability and Monte Carlo podium probabilities.
 - Built a FastAPI prediction service (Dockerized, tested with pytest + CI via
-  GitHub Actions) with an optional LLM layer that turns SHAP values into a
-  natural-language race explanation.
+  GitHub Actions).
 
 ## What's next
 
-See `todo.md` for the full in-progress modernization roadmap and an honest,
-checkbox-level account of what's done vs. still open (mainly: live deployment,
-a real LLM-summary example from a live API key, and per-model hyperparameter
-tuning).
+Still open: live deployment to a public host, and per-model hyperparameter
+tuning.
