@@ -1,19 +1,21 @@
-# F1 Predictor
+# 🏎️ F1 Predictor
 
 [![CI](https://github.com/divyshah03/f1-race-prediction-machine-learning-system/actions/workflows/ci.yml/badge.svg)](https://github.com/divyshah03/f1-race-prediction-machine-learning-system/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 A machine learning pipeline that predicts Formula 1 race outcomes from qualifying
 times, historical race telemetry (via [FastF1](https://github.com/theOehrly/Fast-F1)),
 and race-day weather forecasts.
 
-## Why this is harder than it looks
+## 🤔 Why this is harder than it looks
 
 Predicting F1 finishing order from qualifying isn't just "sort by grid position":
 race pace diverges from qualifying pace, weather can flip the whole order, DNFs and
 strategy calls add variance no lap-time model captures, and every circuit rewards a
 different car/driver skill mix. This project doesn't solve strategy or DNFs — it
 predicts *pace-based* finishing order from qualifying + historical + weather signals,
-and is explicit (see Results below) about where that ceiling is.
+and is explicit (see 📊 Results below) about where that ceiling is.
 
 This project started as nine near-identical, copy-pasted per-race scripts, each with
 its own hardcoded API key, its own slightly-different feature engineering, and its
@@ -28,7 +30,7 @@ configs/races/<slug>.yaml (quali,  │      (engineer.py)     (ColumnTransformer
   teams, reference data)          ─┘                          + regressor)
 ```
 
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 f1-predictor/
@@ -57,7 +59,7 @@ f1-predictor/
 └── .env.example
 ```
 
-## Installation
+## ⚙️ Installation
 
 ```bash
 python3 -m venv .venv
@@ -66,7 +68,7 @@ pip install -e ".[api,dev]"
 cp .env.example .env   # fill in OPENWEATHER_API_KEY if you have one
 ```
 
-## Usage
+## 🚀 Usage
 
 Run the pipeline for one race:
 
@@ -79,13 +81,13 @@ Available race slugs live in `configs/races/` (e.g. `bahrain_gp`, `monaco_gp`,
 how that compares to the naive "predict qualifying order" baseline, and the
 predicted podium.
 
-Train and benchmark a single model across every race (Phase 2):
+Train and benchmark a single model across every race:
 
 ```bash
 python -m f1_predictor.unified
 ```
 
-Every run of the above logs params, metrics, the fitted model (loadable back
+📈 Every run of the above logs params, metrics, the fitted model (loadable back
 via `mlflow.sklearn.load_model`, for every candidate type including
 XGBoost/LightGBM/CatBoost), and a SHAP summary plot to MLflow. Inspect with:
 
@@ -100,7 +102,7 @@ uvicorn api.main:app --reload
 # then: curl -X POST localhost:8000/predict -H 'content-type: application/json' -d '{"race": "monaco_gp"}'
 ```
 
-Or run it in Docker (verified end-to-end: builds, serves `/health`, `/races`,
+🐳 Or run it in Docker (verified end-to-end: builds, serves `/health`, `/races`,
 and `/predict` with real, non-mocked FastF1 + weather data):
 
 ```bash
@@ -116,14 +118,14 @@ ruff check src api tests
 black --check src api tests
 ```
 
-## Adding a race
+## ➕ Adding a race
 
 Add a new `configs/races/<slug>.yaml` (see any existing file for the schema:
 `historical` round/year/session, `weather` coordinates + forecast time, `model`
 hyperparameters, `drivers` with qualifying times, and any optional reference data
 like `driver_team` / `team_points` / `clean_air_race_pace`). No code changes needed.
 
-## Results
+## 📊 Results
 
 One `gradient_boosting` model trained across all 9 races (`circuit` as a one-hot
 categorical feature), evaluated with a **walk-forward split** — trained on the
@@ -132,10 +134,10 @@ Dhabi) — not a random split, which would leak future races into training:
 
 | Model                  | MAE (s) | RMSE (s) | Spearman (per-race) |
 |-------------------------|--------:|---------:|---------:|
-| **gradient_boosting**   | **2.60**| **3.61** | 0.33     |
+| **gradient_boosting** 🏆 | **2.60**| **3.61** | 0.33     |
 | xgboost                 | 3.30    | 4.46     | 0.16     |
 | lightgbm                | 5.92    | 6.94     | 0.26     |
-| catboost                | 7.39    | 9.39     | **0.54**|
+| catboost 🏆              | 7.39    | 9.39     | **0.54**|
 | baseline (quali order)  | 8.01    | 8.06     | 0.50     |
 
 Reproduce with `python -m f1_predictor.unified`.
@@ -151,7 +153,7 @@ which looked like a modeling bug. It wasn't: CatBoost's model artifact,
 categorical handling, and loss/eval setup all check out, and per-race it's
 actually the *best*-ranking model of the four, ahead of the naive baseline.
 
-**Honest read of this table:** no single model wins on both axes.
+💡 **Honest read of this table:** no single model wins on both axes.
 `gradient_boosting` has the lowest absolute error (**-67.6% MAE vs. baseline**)
 but the worst rank-correlation lift of the boosted models — it's actually
 *less* rank-correlated with the true order than just sorting by qualifying
@@ -165,12 +167,12 @@ versa. (Also fixed along the way: XGBoost defaults to
 already one-hot encoded upstream and XGBoost never sees a native categorical
 column.)
 
-Beyond the point prediction, every race also gets Monte Carlo **podium/win
+🥇 Beyond the point prediction, every race also gets Monte Carlo **podium/win
 probabilities** (`models/predict.py::podium_probabilities`) by perturbing the
 predicted time with the model's own held-out residual noise — e.g. for Monaco:
 LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
 
-## What I'd do with more time
+## 🔭 What I'd do with more time
 
 - **Tune per-model-type**, not one generic hyperparameter set for all four
   candidates — `gradient_boosting` currently has the best MAE but the worst
@@ -186,7 +188,7 @@ LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
   `/predict` against live, non-mocked FastF1 data); getting a public URL on
   Render/Railway/Fly.io is a deliberate manual step, not attempted here.
 
-## Resume bullets
+## 📝 Resume bullets
 
 - Refactored a 9-script, copy-pasted F1 prediction codebase (hardcoded API keys,
   duplicated feature logic) into one configurable pipeline driven by per-race YAML,
@@ -197,7 +199,7 @@ LEC 85% podium / 53% win, NOR 52%/15%, PIA 40%/9%.
 - Built a FastAPI prediction service (Dockerized, tested with pytest + CI via
   GitHub Actions).
 
-## What's next
+## 🔜 What's next
 
 Still open: live deployment to a public host, and per-model hyperparameter
 tuning.
