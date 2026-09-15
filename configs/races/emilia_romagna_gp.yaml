@@ -1,0 +1,77 @@
+name: "Emilia Romagna Grand Prix"
+circuit: imola
+season: 2025
+
+historical:
+  year: 2024
+  round: 7
+  session: "Q"
+
+weather:
+  latitude: 44.3439
+  longitude: 11.7167
+  forecast_time: "2025-05-18 06:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 100
+  learning_rate: 0.05
+  max_depth: 3
+  test_size: 0.2
+  random_state: 34
+
+drivers:
+  - {code: VER, qualifying_time: 74.704}
+  - {code: NOR, qualifying_time: 74.962}
+  - {code: PIA, qualifying_time: 74.670}
+  - {code: RUS, qualifying_time: 74.807}
+  - {code: SAI, qualifying_time: 75.432}
+  - {code: ALB, qualifying_time: 75.473}
+  - {code: LEC, qualifying_time: 75.604}
+  - {code: OCO, qualifying_time: 76.613}
+  - {code: HAM, qualifying_time: 75.765}
+  - {code: STR, qualifying_time: 75.581}
+  - {code: GAS, qualifying_time: 75.787}
+  - {code: ALO, qualifying_time: 75.431}
+  - {code: HUL, qualifying_time: 76.518}
+
+driver_team:
+  VER: Red Bull
+  NOR: McLaren
+  PIA: McLaren
+  LEC: Ferrari
+  RUS: Mercedes
+  HAM: Mercedes
+  GAS: Alpine
+  ALO: Aston Martin
+  TSU: Racing Bulls
+  SAI: Ferrari
+  HUL: Kick Sauber
+  OCO: Alpine
+  STR: Aston Martin
+
+team_points:
+  McLaren: 246
+  Mercedes: 141
+  Red Bull: 105
+  Williams: 37
+  Ferrari: 94
+  Haas: 20
+  Aston Martin: 14
+  Kick Sauber: 6
+  Racing Bulls: 8
+  Alpine: 7
+
+clean_air_race_pace:
+  VER: 93.191067
+  HAM: 94.020622
+  LEC: 93.418667
+  NOR: 93.428600
+  ALO: 94.784333
+  PIA: 93.232111
+  RUS: 93.833378
+  SAI: 94.497444
+  STR: 95.318250
+  HUL: 95.345455
+  OCO: 95.682128
