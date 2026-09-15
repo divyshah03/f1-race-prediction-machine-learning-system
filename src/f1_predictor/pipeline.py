@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import logging
 
+import numpy as np
 from sklearn.model_selection import train_test_split
 
 from f1_predictor import evaluate
@@ -45,16 +46,17 @@ def run(race: str) -> dict:
 
     pipeline, columns = train.fit(train_table, config.model)
 
-    model_metrics = evaluate.regression_metrics(
-        test_table["LapTime (s)"], pipeline.predict(test_table[columns])
-    )
+    test_predictions = pipeline.predict(test_table[columns])
+    model_metrics = evaluate.regression_metrics(test_table["LapTime (s)"], test_predictions)
     baseline_metrics = evaluate.regression_metrics(
         test_table["LapTime (s)"], test_table["QualifyingTimeRaw (s)"]
     )
     lift = evaluate.ranking_lift(model_metrics, baseline_metrics)
+    residual_std = float(np.std(test_table["LapTime (s)"].to_numpy() - test_predictions))
 
     results = predict.predict_race_times(pipeline, table, columns)
     podium = predict.podium(results)
+    probabilities = predict.podium_probabilities(results, residual_std)
 
     print(f"\nPredicted {config.name} result\n")
     print(results[["Driver", "PredictedRaceTime (s)"]].to_string(index=False))
@@ -70,9 +72,12 @@ def run(race: str) -> dict:
         f"Lift over baseline: {lift['spearman_lift']:+.2f} spearman, {lift['mae_improvement_pct']:+.1f}% MAE"
     )
 
-    print("\nPredicted podium:")
+    print("\nPredicted podium (point estimate):")
     for position, (_, row) in zip(["P1", "P2", "P3"], podium.iterrows(), strict=False):
         print(f"  {position}: {row['Driver']} ({row['PredictedRaceTime (s)']:.2f}s)")
+
+    print(f"\nMonte Carlo podium probabilities (residual std {residual_std:.2f}s):")
+    print(probabilities.head(5).to_string(index=False, float_format=lambda v: f"{v:.1%}"))
 
     return {
         "config": config,
@@ -82,6 +87,8 @@ def run(race: str) -> dict:
         "lift": lift,
         "pipeline": pipeline,
         "columns": columns,
+        "residual_std": residual_std,
+        "podium_probabilities": probabilities,
     }
 
 

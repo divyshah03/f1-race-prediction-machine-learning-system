@@ -24,9 +24,18 @@ def test_predict_endpoint_returns_prediction(monkeypatch):
         "results": pd.DataFrame(
             {"Driver": ["VER", "NOR", "LEC"], "PredictedRaceTime (s)": [90.0, 91.0, 92.0]}
         ),
+        "podium_probabilities": pd.DataFrame(
+            {
+                "Driver": ["VER", "NOR", "LEC"],
+                "PodiumProbability": [0.9, 0.6, 0.5],
+                "WinProbability": [0.7, 0.2, 0.1],
+            }
+        ),
         "model_metrics": {"mae": 1.0, "rmse": 1.2, "spearman": 0.8},
         "baseline_metrics": {"mae": 1.5, "rmse": 1.8, "spearman": 0.6},
         "lift": {"spearman_lift": 0.2, "mae_improvement_pct": 33.3},
+        "pipeline": None,
+        "columns": [],
     }
 
     _cached_run.cache_clear()
@@ -39,3 +48,9 @@ def test_predict_endpoint_returns_prediction(monkeypatch):
     body = response.json()
     assert body["podium"] == ["VER", "NOR", "LEC"]
     assert body["model_mae_s"] == 1.0
+    assert body["podium_probabilities"][0] == {
+        "driver": "VER",
+        "podium_probability": 0.9,
+        "win_probability": 0.7,
+    }
+    assert body["llm_summary"] is None

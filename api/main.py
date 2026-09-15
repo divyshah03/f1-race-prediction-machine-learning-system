@@ -16,6 +16,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from f1_predictor.config import available_races
+from f1_predictor.explain import explain_prediction
+from f1_predictor.llm_summary import summarize_prediction
 from f1_predictor.pipeline import run as run_pipeline
 
 app = FastAPI(
@@ -30,18 +32,27 @@ class DriverPrediction(BaseModel):
     predicted_race_time_s: float
 
 
+class PodiumProbability(BaseModel):
+    driver: str
+    podium_probability: float
+    win_probability: float
+
+
 class PredictResponse(BaseModel):
     race: str
     predicted_order: list[DriverPrediction]
     podium: list[str]
+    podium_probabilities: list[PodiumProbability]
     model_mae_s: float
     model_spearman: float
     baseline_spearman: float
     spearman_lift: float
+    llm_summary: str | None = None
 
 
 class PredictRequest(BaseModel):
     race: str
+    include_llm_summary: bool = False
 
 
 @app.get("/races")
@@ -64,6 +75,17 @@ def predict(request: PredictRequest) -> PredictResponse:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     results = outcome["results"]
+    probabilities = outcome["podium_probabilities"]
+
+    llm_summary = None
+    if request.include_llm_summary:
+        winner = results.iloc[0]["Driver"]
+        winner_shap = explain_prediction(outcome["pipeline"], results, outcome["columns"], winner)
+        podium_for_prompt = [
+            (row["Driver"], row["PredictedRaceTime (s)"]) for _, row in results.head(3).iterrows()
+        ]
+        llm_summary = summarize_prediction(outcome["config"].name, podium_for_prompt, winner_shap)
+
     return PredictResponse(
         race=outcome["config"].name,
         predicted_order=[
@@ -71,10 +93,19 @@ def predict(request: PredictRequest) -> PredictResponse:
             for _, row in results.iterrows()
         ],
         podium=list(results["Driver"].head(3)),
+        podium_probabilities=[
+            PodiumProbability(
+                driver=row["Driver"],
+                podium_probability=row["PodiumProbability"],
+                win_probability=row["WinProbability"],
+            )
+            for _, row in probabilities.iterrows()
+        ],
         model_mae_s=outcome["model_metrics"]["mae"],
         model_spearman=outcome["model_metrics"]["spearman"],
         baseline_spearman=outcome["baseline_metrics"]["spearman"],
         spearman_lift=outcome["lift"]["spearman_lift"],
+        llm_summary=llm_summary,
     )
 
 
