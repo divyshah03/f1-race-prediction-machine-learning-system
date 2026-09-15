@@ -3,12 +3,31 @@
 from __future__ import annotations
 
 import dataclasses
+import os
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-CONFIGS_ROOT = Path(__file__).resolve().parents[2] / "configs" / "races"
+
+def _default_configs_root() -> Path:
+    """Locate configs/races/, overridable via F1_CONFIGS_DIR (see .env.example).
+
+    `Path(__file__).resolve().parents[2]` only lands on the repo root for an
+    *editable* install (`pip install -e .`), where this file still lives under
+    `src/f1_predictor/`. A regular install (e.g. the Dockerfile's `pip install
+    ".[api]"`) copies this module into site-packages, several directories away
+    from any `configs/` folder, so that guess silently resolves to a path that
+    doesn't exist and `available_races()` returns an empty list. F1_CONFIGS_DIR
+    lets a packaged deployment point at wherever it actually copied configs/.
+    """
+    env_dir = os.getenv("F1_CONFIGS_DIR")
+    if env_dir:
+        return Path(env_dir)
+    return Path(__file__).resolve().parents[2] / "configs" / "races"
+
+
+CONFIGS_ROOT = _default_configs_root()
 
 
 @dataclasses.dataclass

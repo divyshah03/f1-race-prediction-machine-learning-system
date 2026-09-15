@@ -14,6 +14,7 @@ COPY configs ./configs
 RUN pip install --no-cache-dir ".[api]"
 
 ENV F1_CACHE_DIR=/app/f1_cache
+ENV F1_CONFIGS_DIR=/app/configs/races
 EXPOSE 8000
 
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
