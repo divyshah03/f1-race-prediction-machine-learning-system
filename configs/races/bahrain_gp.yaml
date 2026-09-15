@@ -1,0 +1,64 @@
+name: "Bahrain Grand Prix"
+circuit: bahrain_international
+season: 2025
+
+historical:
+  year: 2024
+  round: 1
+  session: "R"
+
+weather:
+  latitude: 26.0325
+  longitude: 50.5106
+  forecast_time: "2025-04-30 15:00:00"
+  rain_threshold: 0.75
+
+model:
+  type: gradient_boosting
+  n_estimators: 200
+  learning_rate: 0.1
+  test_size: 0.2
+  random_state: 38
+
+drivers:
+  - {code: VER, qualifying_time: 90.423}
+  - {code: NOR, qualifying_time: 90.267}
+  - {code: PIA, qualifying_time: 89.841}
+  - {code: LEC, qualifying_time: 90.175}
+  - {code: RUS, qualifying_time: 90.009}
+  - {code: HAM, qualifying_time: 90.772}
+  - {code: GAS, qualifying_time: 90.216}
+  - {code: ALO, qualifying_time: 91.886}
+  - {code: TSU, qualifying_time: 91.303}
+  - {code: SAI, qualifying_time: 90.680}
+  - {code: HUL, qualifying_time: 92.067}
+  - {code: OCO, qualifying_time: 91.886}
+  - {code: STR, qualifying_time: 92.283}
+
+wet_performance_factor:
+  VER: 0.975196
+  HAM: 0.976464
+  LEC: 0.975862
+  NOR: 0.978179
+  ALO: 0.972655
+  RUS: 0.968678
+  SAI: 0.978754
+  TSU: 0.996338
+  OCO: 0.981810
+  GAS: 0.978832
+  STR: 0.979857
+
+season_points:
+  VER: 61
+  NOR: 62
+  PIA: 80
+  LEC: 20
+  RUS: 20
+  HAM: 20
+  GAS: 20
+  ALO: 20
+  TSU: 20
+  SAI: 20
+  HUL: 2
+  OCO: 8
+  STR: 11
